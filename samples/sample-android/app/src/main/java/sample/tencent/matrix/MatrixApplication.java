@@ -20,6 +20,8 @@ import android.app.Application;
 import android.content.Context;
 
 import com.tencent.matrix.Matrix;
+import com.tencent.matrix.fdcanary.FDCanaryPlugin;
+import com.tencent.matrix.fdcanary.config.FDConfig;
 import com.tencent.matrix.iocanary.IOCanaryPlugin;
 import com.tencent.matrix.iocanary.config.IOConfig;
 import com.tencent.matrix.resource.ResourcePlugin;
@@ -99,6 +101,11 @@ public class MatrixApplication extends Application {
             SQLiteLintConfig config = initSQLiteLintConfig();
             SQLiteLintPlugin sqLiteLintPlugin = new SQLiteLintPlugin(config);
             builder.plugin(sqLiteLintPlugin);
+
+            FDCanaryPlugin fdCanaryPlugin = new FDCanaryPlugin(new FDConfig.Builder()
+                    .dynamicConfig(dynamicConfig)
+                    .build());
+            builder.plugin(fdCanaryPlugin);
         }
 
         Matrix.init(builder.build());
