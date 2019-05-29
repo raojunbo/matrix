@@ -51,6 +51,7 @@ void kscrash_crashCallback(const KSCrashReportWriter *writer)
 - (void)installMatrix
 {
     // Get Matrix's log
+    //rjb 获取adapter的代理
     [MatrixAdapter sharedInstance].delegate = self;
     
     Matrix *matrix = [Matrix sharedInstance];
@@ -62,7 +63,7 @@ void kscrash_crashCallback(const KSCrashReportWriter *writer)
     crashBlockConfig.enableCrash = YES;
     crashBlockConfig.enableBlockMonitor = YES;
     crashBlockConfig.blockMonitorDelegate = self;
-    crashBlockConfig.onAppendAdditionalInfoCallBack = kscrash_crashCallback;
+    crashBlockConfig.onAppendAdditionalInfoCallBack = kscrash_crashCallback;//这里挺有意思，
     crashBlockConfig.reportStrategy = EWCCrashBlockReportStrategy_All;
     
     WCBlockMonitorConfiguration *blockMonitorConfig = [WCBlockMonitorConfiguration defaultConfig];
@@ -75,15 +76,21 @@ void kscrash_crashCallback(const KSCrashReportWriter *writer)
     crashBlockPlugin.pluginConfig = crashBlockConfig;
     [curBuilder addPlugin:crashBlockPlugin];
     
+    //rjb,每一个plugin都有一个配置对象
+    //rjb,将Plugin添加进，builder里面去
+    //rjb,整个代理，回调是通过这个builder去管理
+    //WCCrashBlockMonitorPlugin,WCMemoryStatPlugin
+    //WCBlockMonitorConfiguration,WCMemoryStatConfig
     WCMemoryStatPlugin *memoryStatPlugin = [[WCMemoryStatPlugin alloc] init];
     memoryStatPlugin.pluginConfig = [WCMemoryStatConfig defaultConfiguration];
     [curBuilder addPlugin:memoryStatPlugin];
     
+    //matrix管理builder,builder是plugin集合，builder处理回调,plugin处理回调。真正起到核心功能的还是这两个插件
     [matrix addMatrixBuilder:curBuilder];
     
     [crashBlockPlugin start];
     [memoryStatPlugin start];
-    
+  
     m_cbPlugin = crashBlockPlugin;
     m_msPlugin = memoryStatPlugin;
 }
@@ -164,6 +171,7 @@ void kscrash_crashCallback(const KSCrashReportWriter *writer)
     }
     [appDelegate.navigationController pushViewController:textVC animated:YES];
     
+    //告知这个已经报告完毕,然后让其删除。
     [[Matrix sharedInstance] reportIssueComplete:issue success:YES];
 }
 

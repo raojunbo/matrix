@@ -52,6 +52,8 @@
 // ============================================================================
 
 // Define what a matrix plugin
+// 通过协议定义什么是plugin
+// plugin能力，start,stop,destroy,对外提供状态回调能力,具有报告的事件的能力
 @protocol MatrixPluginProtocol <NSObject>
 
 @required
@@ -94,6 +96,7 @@
 #pragma mark - MatrixPlugin
 // ============================================================================
 
+// plugin 的一个基类定义
 @interface MatrixPlugin : NSObject <MatrixPluginProtocol>
 
 @property (nonatomic, strong) MatrixPluginConfig *pluginConfig;

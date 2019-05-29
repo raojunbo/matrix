@@ -28,7 +28,7 @@
 {
     self = [super init];
     if (self) {
-        self.appShortVersion = self.appVersion = @"";
+        self.appShortVersion = self.appVersion = @"";//appversion
         self.enableCrash = YES;
         self.enableBlockMonitor = YES;
         self.blockMonitorDelegate = nil;

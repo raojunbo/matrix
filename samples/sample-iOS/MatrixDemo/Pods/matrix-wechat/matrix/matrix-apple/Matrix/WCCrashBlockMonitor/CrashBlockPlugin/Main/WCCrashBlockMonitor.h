@@ -24,6 +24,9 @@
 
 @class CrashBlockMonitorPlugin;
 
+/*
+ 真正的监听器
+ */
 @interface WCCrashBlockMonitor : NSObject
 
 /// app's full versionl, exp: 6.6.6.6

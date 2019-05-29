@@ -96,6 +96,7 @@
     self.builder = builder;
     NSMutableSet *buildPlugins = [builder getPlugins];
     for (MatrixPlugin *plugin in buildPlugins) {
+        //将builder的listerner设置成plugin的代理
         [plugin setupPluginListener:[builder pluginListener]];
     }
 }

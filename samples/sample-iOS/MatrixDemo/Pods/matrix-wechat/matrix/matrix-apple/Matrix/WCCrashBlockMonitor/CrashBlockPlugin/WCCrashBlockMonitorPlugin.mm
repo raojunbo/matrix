@@ -31,8 +31,8 @@
 
 @interface WCCrashBlockMonitorPlugin ()
 
-@property (nonatomic, strong) WCCrashBlockMonitor *cbMonitor;
-@property (nonatomic, strong) NSMutableArray *uploadingFileIDArray;
+@property (nonatomic, strong) WCCrashBlockMonitor *cbMonitor;//真正的监听器
+@property (nonatomic, strong) NSMutableArray *uploadingFileIDArray;//正在上传文件
 @property (nonatomic, strong) dispatch_queue_t pluginReportQueue;
 
 @end
@@ -67,7 +67,7 @@
         _cbMonitor = [[WCCrashBlockMonitor alloc] init];
         _cbMonitor.appVersion = [self.pluginConfig appVersion];
         _cbMonitor.appShortVersion = [self.pluginConfig appShortVersion];
-        _cbMonitor.delegate = [self.pluginConfig blockMonitorDelegate];
+        _cbMonitor.delegate = [self.pluginConfig blockMonitorDelegate];//
         _cbMonitor.onHandleSignalCallBack = [self.pluginConfig onHandleSignalCallBack];
         _cbMonitor.onAppendAdditionalInfoCallBack = [self.pluginConfig onAppendAdditionalInfoCallBack];
         _cbMonitor.bmConfiguration = [self.pluginConfig blockMonitorConfiguration];
@@ -78,7 +78,7 @@
     }
     [super start];
 
-    [self delayReportCrash];
+    [self delayReportCrash];//crash的报告在，在下次启动时，做报告
     [self autoClean];
     
 #if !TARGET_OS_OSX
@@ -121,6 +121,8 @@
 
 - (void)reportIssueCompleteWithIssue:(MatrixIssue *)issue success:(BOOL)bSuccess
 {
+    //用户告诉我已经处理了issue
+    //用户可能，执行多次这个操作，所以为了线程安全，将这个放到一个串行队列里去执行
     dispatch_async(self.pluginReportQueue, ^{
         if (bSuccess) {
             MatrixInfo(@"report issuse success: %@", issue);
@@ -129,12 +131,14 @@
         }
         if ([issue.issueTag isEqualToString:[WCCrashBlockMonitorPlugin getTag]]) {
             if (issue.reportType == EMCrashBlockReportType_Crash) {
+                //如果是crash类型的report，删除report
                 if (bSuccess) {
                     MatrixInfo(@"delete crash: reportID: %@", issue.issueID);
                     [WCCrashBlockFileHandler deleteCrashDataWithReportID:issue.issueID];
                 }
                 [self removeReportIDFromUploadingArray:issue.issueID];
             } else {
+                //如果是卡顿类型的report，删除report
                 NSDictionary *customInfo = [issue customInfo];
                 if (customInfo == nil) {
                     MatrixError(@"no custom info, have error");
@@ -333,6 +337,7 @@
             }
             [self addReportIDToUploadingArray:newestReportID];
             NSData *crashData = crashDataDic[@"crashData"];
+            
             MatrixIssue *issue = [[MatrixIssue alloc] init];
             issue.issueTag = [WCCrashBlockMonitorPlugin getTag];
             issue.issueID = newestReportID;
